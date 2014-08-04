@@ -1,0 +1,6 @@
+*.pyc
+*.egg-info
+graph/settings/local.py
+graph/settings/local/*
+docs/_build
+.idea/*

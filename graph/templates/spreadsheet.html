@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<!--Theme-->
+<link href="http://cdn.wijmo.com/themes/aristo/jquery-wijmo.css" rel="stylesheet" type="text/css" />
+ 
+<!--Wijmo Widgets CSS-->
+<link href="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.css" rel="stylesheet" type="text/css" />
+ 
+<!--Wijmo Widgets JavaScript-->
+<script src="http://cdn.wijmo.com/jquery.wijmo-open.all.3.20142.45.min.js" type="text/javascript"></script>
+<script src="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.js" type="text/javascript"></script>
+<!--SpreadJS Widgets JavaScript-->
+<script src="http://cdn.wijmo.com/spreadjs/jquery.wijmo.wijspread.all.3.20142.11.min.js" type="text/javascript"></script>
+
+<!--SpreadJS Widgets CSS-->
+<link href="http://cdn.wijmo.com/spreadjs/jquery.wijmo.wijspread.3.20142.11.css" rel="stylesheet" type="text/css" />
+
+<!--Wijmo Ajax Data-->
+<script src="http://cdn.wijmo.com/interop/wijmo.data.ajax.3.20142.45.js" type="text/javascript"></script>
+
+<!--Knockout JS Library-->
+<!-- Both of the links below can work -->
+<script src="http://cdn.wijmo.com/wijmo/external/knockout-2.2.0.js" type="text/javascript"></script>
+<!--<script src="http://cdn.wijmo.com/amd-js/3.20142.45/knockout-3.1.0.js" type="text/javascript"></script>-->
+
+<!--Wijmo Knockout Integration Library-->
+<script src="http://cdn.wijmo.com/interop/knockout.wijmo.3.20142.45.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Spreadsheet</h1>
+<table id="sheet-grid" data-bind="wijgrid: {
+    data: sheet,
+    allowEditing: true,
+    allowPaging: true,
+    showFilter: true }">
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+var view;
+
+function ViewModel() {
+    this.sheet = new wijmo.data.AjaxDataView("{% url 'data' pk=data.id%}",
+        {
+            onResponse: function(response) {
+                var cols = new Array();
+                for (var k in response) {
+                    cols.push(k);
+                }
+                var count = 0;
+                while (response[cols[0]].hasOwnProperty(count)) count++;
+                var data = new Array();
+                for (var i=0; i<count; i++) {
+                    var item = {};
+                    for (var j=0; j<cols.length; j++) {
+                        item[cols[j]] = response[cols[j]][i];
+                    }
+                    data.push(item);
+                }
+                return {
+                    totalItemCount: count-1,
+                    results: data
+                }
+            },
+            allowFiltering: false,
+            allowPaging: false
+        }
+    );
+}
+
+$(function() {
+    //$("#spread").wijspread({ sheetCount: 1 });
+    view = new ViewModel();
+    ko.applyBindings(view);
+});
+
+</script>
+{% endblock %}
