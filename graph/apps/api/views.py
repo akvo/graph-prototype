@@ -30,7 +30,10 @@ class SpreadsheetView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super(self.__class__, self).get_context_data(**kwargs)
-        ctx['data'] = FileData.objects.get(pk=kwargs['pk'])
+        if kwargs['pk']:
+            ctx['data'] = FileData.objects.get(pk=kwargs['pk'])
+        else:
+            ctx['sheets'] = FileData.objects.all()
         return ctx
 
 import pandas as pd

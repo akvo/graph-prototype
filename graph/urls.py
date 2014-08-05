@@ -10,7 +10,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
    # (r'', include('graph.apps.')),
     #url(r'^editor/', TemplateView.as_view(template_name='spreadsheet.html')),
-    url(r'^/?$', TemplateView.as_view(template_name='index.html')),
+    url(r'^/?$', TemplateView.as_view(template_name='index.html'), name='index'),
     url(r'^new/', UploadView.as_view(), name='upload'),
     url(r'^ss/(?P<pk>\d+)?', SpreadsheetView.as_view(), name='spreadsheet'),
     url(r'^data/(?P<pk>\d+)?', 'graph.apps.api.views.xld', name='data'),

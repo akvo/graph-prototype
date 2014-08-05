@@ -29,13 +29,23 @@
 {% endblock %}
 
 {% block content %}
-<h1>Spreadsheet</h1>
-<table id="sheet-grid" data-bind="wijgrid: {
-    data: sheet,
-    allowEditing: true,
-    allowPaging: true,
-    showFilter: true }">
-</table>
+    {% if data %}
+    <h1>Spreadsheet</h1>
+    <table id="sheet-grid" data-bind="wijgrid: {
+        data: sheet,
+        allowEditing: true,
+        allowPaging: true,
+        showFilter: true }">
+    </table>
+    {% else %}
+    <h1>Spreadsheets</h1>
+        <p class="text-right"><a href="{% url 'upload' %}">Upload new sheet</a></p>
+        <ul>
+        {% for sheet in sheets %}
+            <li><a href="{% url 'spreadsheet' pk=sheet.id %}">{{ sheet.file.name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}
