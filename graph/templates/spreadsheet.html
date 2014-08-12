@@ -59,23 +59,9 @@ function ViewModel() {
     this.sheet = new wijmo.data.AjaxDataView("{% url 'data' pk=data.id%}",
         {
             onResponse: function(response) {
-                var cols = new Array();
-                for (var k in response) {
-                    cols.push(k);
-                }
-                var count = 0;
-                while (response[cols[0]].hasOwnProperty(count)) count++;
-                var data = new Array();
-                for (var i=0; i<count; i++) {
-                    var item = {};
-                    for (var j=0; j<cols.length; j++) {
-                        item[cols[j]] = response[cols[j]][i];
-                    }
-                    data.push(item);
-                }
-                return {
-                    totalItemCount: count-1,
-                    results: data
+                return{
+                    totalItemCount: response.length,
+                    results: response
                 }
             },
             allowFiltering: false,

@@ -46,4 +46,4 @@ def xld(request, pk=None):
     obj = FileData.objects.get(pk=pk)
     xf = pd.ExcelFile(obj.file.path)
     xld = xf.parse(xf.sheet_names[0])
-    return HttpResponse(xld.to_json(), content_type="application/json")
+    return HttpResponse(xld.to_json(orient='records', date_format='iso'), content_type="application/json")
