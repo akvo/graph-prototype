@@ -26,6 +26,8 @@ SECRET_KEY = 'm0bm)-*g60@!oh88bmq+2mxb133a-jz_z#+4s72du%_j&lzshm'
 
 INSTALLED_APPS = (
     # 'graph.apps.',
+    'rest_framework',
+    'django_extensions',
     'graph.apps.api',
     #'south',
 
@@ -121,3 +123,8 @@ AUTHENTICATION_BACKENDS += (
 #==============================================================================
 # Third party app settings
 #==============================================================================
+IPYTHON_ARGUMENTS = [
+    '--ext', 'django_extensions.management.notebook_extension',
+    '--ext', 'graph.apps.api.models'
+    '--debug',
+]
