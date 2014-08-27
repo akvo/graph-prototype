@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Spreadsheets<small class="text-right">
+<a href="{% url 'spreadsheet-upload' %}">
+<button type="button" class="btn btn-small btn-default"><i class="fa fa-plus"></i>Add Sheet</button>
+</a>
+</small></h1>
+<ul>
+{% for sheet in sheets %}
+    <li><a href="{% url 'spreadsheet-detail' pk=sheet.id %}">{{ sheet.file.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock content %}

@@ -1,12 +1,20 @@
 from django.shortcuts import render
-from django.views.generic import View, FormView, TemplateView
+from django.views.generic import View, FormView, TemplateView, ListView, DetailView, CreateView
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
+from django.shortcuts import redirect
+
+from django.http import Http404
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 import os
 
-from .forms import ExcelFileForm
-from .models import FileData
+from .forms import ExcelFileForm, ChartForm, ChartSeriesFormset
+from .models import FileData, Chart
+from .serializers import ChartSerializer
 
 # Create your views here.
 class UploadView(FormView):
@@ -18,7 +26,7 @@ class UploadView(FormView):
         self.id = None
 
     def get_success_url(self):
-        return reverse('spreadsheet', kwargs={'pk': self.id})
+        return reverse('spreadsheet-detail', kwargs={'pk': self.id})
 
     def form_valid(self, form):
         obj = form.save(commit=True)
@@ -36,14 +44,82 @@ class SpreadsheetView(TemplateView):
             ctx['sheets'] = FileData.objects.all()
         return ctx
 
+class SpreadsheetListView(ListView):
+    model = FileData
+    template_name = "api/spreadsheet_list.html"
+    context_object_name = "sheets"
+
+class SpreadsheetDetailView(DetailView):
+    template_name = "api/spreadsheet_detail.html"
+    context_object_name = "sheet"
+    model = FileData
+
+    def get_context_data(self, **kwargs):
+        ctx = super(self.__class__, self).get_context_data(**kwargs)
+        ctx['chart_form'] = ChartForm(initial={'data': self.object})
+        ctx['formset'] = ChartSeriesFormset()
+        return ctx
+
+class ChartCreateView(CreateView):
+    form_class = ChartForm
+    template_name = "api/chart_create.html"
+
+    def get_success_url(self):
+        return reverse("chart-detail", kwargs= {'pk':self.object.id} )
+
+    def form_valid(self, form):
+        formset = ChartSeriesFormset(self.request.POST)
+        self.object = form.save()
+        if formset.is_valid():
+            formset.instance = self.object
+            formset.save()
+
+        return super(ChartCreateView, self).form_valid(form)
+
+class ChartDetailView(DetailView):
+    template_name = "api/chart_detail.html"
+    model = Chart
+    context_object_name = "chart"
+
+class ChartMetaView(APIView):
+    def get_object(self, pk):
+        try:
+            return Chart.objects.get(pk=pk)
+        except Chart.DoesNotExist:
+            raise Http404
+
+    def get(self, request, **kwargs):
+        chart = self.get_object(kwargs['pk'])
+        serializer = ChartSerializer(chart)
+        return Response(serializer.data)
+
 import pandas as pd
 from django.http import HttpResponse
 
-def xld(request, pk=None):
-    if not pk:
-        return HttpResponse("{\"message\": \"No spreadsheet selected or uploaded\"}", content_type="application/json")
+def xld(request, pk=None, orient='records', format='json'):
+    try:
+        obj = FileData.objects.get(pk=pk)
+    except Chart.DoesNotExist:
+        return Http404
 
-    obj = FileData.objects.get(pk=pk)
     xf = pd.ExcelFile(obj.file.path)
     xld = xf.parse(xf.sheet_names[0])
+    return HttpResponse(xld.to_json(orient=orient, date_format='iso'), content_type="application/json")
+
+def chart_data(request, pk):
+    try:
+        chart = Chart.objects.get(pk=pk)
+    except Chart.DoesNotExist:
+        return Http404
+
+    xf = pd.ExcelFile(chart.data.file.path)
+    xld = xf.parse(xf.sheet_names[0])
     return HttpResponse(xld.to_json(), content_type="application/json")
+
+def chart_create(request):
+    form = ChartForm(request.POST)
+    formset = ChartSeriesFormset(request.POST)
+    if form.is_valid():
+        print "form is valid"
+
+    return redirect("index")

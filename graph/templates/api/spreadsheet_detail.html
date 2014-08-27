@@ -3,10 +3,10 @@
 {% block extra_head %}
 <!--Theme-->
 <link href="http://cdn.wijmo.com/themes/aristo/jquery-wijmo.css" rel="stylesheet" type="text/css" />
- 
+
 <!--Wijmo Widgets CSS-->
 <link href="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.css" rel="stylesheet" type="text/css" />
- 
+
 <!--Wijmo Widgets JavaScript-->
 <script src="http://cdn.wijmo.com/jquery.wijmo-open.all.3.20142.45.min.js" type="text/javascript"></script>
 <script src="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.js" type="text/javascript"></script>
@@ -26,69 +26,56 @@
 
 <!--Wijmo Knockout Integration Library-->
 <script src="http://cdn.wijmo.com/interop/knockout.wijmo.3.20142.45.js" type="text/javascript"></script>
+
+<style type="text/css">
+ul.series-fields {
+    padding-left: 0px;
+}
+ul.series-fields li { display: inline; }
+</style>
 {% endblock %}
 
 {% block content %}
-    {% if data %}
-    <h1>Spreadsheet <small class="text-right"><button type="button" class="btn btn-small btn-primary" id="btn-wizard">Chart Wizard</button> </small></h1>
+<h1>Spreadsheet <small class="text-right"><button type="button" class="btn btn-small btn-primary" id="btn-wizard">Chart Wizard</button> </small></h1>
     <table id="sheet-grid" data-bind="wijgrid: {
         data: sheet,
         allowEditing: true,
         allowPaging: true,
         showFilter: true }">
     </table>
-    {% else %}
-    <h1>Spreadsheets<small class="text-right">
-    <a href="{% url 'spreadsheet-upload' %}">
-    <button type="button" class="btn btn-small btn-default"><i class="fa fa-plus"></i>Add Sheet</button>
-    </a>
-    </small></h1>
-    <ul>
-    {% for sheet in sheets %}
-        <li><a href="{% url 'spreadsheet' pk=sheet.id %}">{{ sheet.file.name }}</a></li>
-    {% endfor %}
-    </ul>
-    {% endif %}
     <div id="dialog-chart" title="Chart Wizard">
-        <div id="chart-wizard">
-            <ol>
-                <li><h1>Chart type</h1></li>
-                <li><h1>X-axis</h1></li>
-                <li><h1>Y-axis</h1></li>
-            </ol>
-            <div>Pick chart type</div>
-            <div>Select x-axis</div>
-            <div>Select y-axis</div>
+        <form id="chart-form" action="{% url 'chart-create' %}" method="post" class="form-horizontal form-inline">
+        {% csrf_token %}
+        <legend>Options</legend>
+        {{ chart_form.as_p }}
+        {{ formset.management_form }}
+        <legend>Series</legend>
+        {% for chartseries_form in formset %}
+            <div id="chartseries-{{ forloop.counter0 }}">
+                <ul class="series-fields">
+                {{ chartseries_form.as_ul }}
+                </ul>
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="button" class="btn btn-info add-series">Add Series</button>
+            <button type="submit" class="btn btn-default">Create Chart</button>
         </div>
+        </form>
     </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script type="text/javascript">
 var view;
 
-{% if data %}
 function ViewModel() {
-    this.sheet = new wijmo.data.AjaxDataView("{% url 'chart-data' pk=data.id%}",
+    this.sheet = new wijmo.data.AjaxDataView("{% url 'chart-data' pk=sheet.id%}",
         {
             onResponse: function(response) {
-                var cols = new Array();
-                for (var k in response) {
-                    cols.push(k);
-                }
-                var count = 0;
-                while (response[cols[0]].hasOwnProperty(count)) count++;
-                var data = new Array();
-                for (var i=0; i<count; i++) {
-                    var item = {};
-                    for (var j=0; j<cols.length; j++) {
-                        item[cols[j]] = response[cols[j]][i];
-                    }
-                    data.push(item);
-                }
                 return {
-                    totalItemCount: count-1,
-                    results: data
+                    totalItemCount: response.length,
+                    results: response
                 }
             },
             allowFiltering: false,
@@ -96,14 +83,10 @@ function ViewModel() {
         }
     );
 }
-{% endif %}
 
 $(function() {
-    //$("#spread").wijspread({ sheetCount: 1 });
-    {% if data %}
     view = new ViewModel();
     ko.applyBindings(view);
-    {% endif %}
     $("#dialog-chart").wijdialog({
         autoOpen: false,
         modal: true,
@@ -118,14 +101,13 @@ $(function() {
             maximize: { visible: false }
         },
         buttons: [
-            { text: "OK", click: function(e) { console.log("Create chart") }},
+            { text: "OK", click: function(e) { $("#chart-form").submit() }},
             { text: "Cancel", click: function() { $(this).wijdialog('close')}}
         ],
         open: function() {
 
         }
     });
-    $("#chart-wizard").wijwizard();
     $("#btn-wizard").click(function() {
         $("#dialog-chart").wijdialog('open');
     });

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% load jsonify %}
+
+{% block extra_head %}
+<!--jQuery References-->
+<script src="http://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.min.js" type="text/javascript"></script>
+
+<!--Theme-->
+<link href="http://cdn.wijmo.com/themes/aristo/jquery-wijmo.css" rel="stylesheet" type="text/css" />
+
+<!--Wijmo Widgets CSS-->
+<link href="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.css" rel="stylesheet" type="text/css" />
+
+<!--Wijmo Widgets JavaScript-->
+<script src="http://cdn.wijmo.com/jquery.wijmo-open.all.3.20142.45.min.js" type="text/javascript"></script>
+<script src="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.js" type="text/javascript"></script>
+<script src="http://cdn.wijmo.com/interop/wijmo.data.ajax.3.20142.45.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+    <div id="chart">
+    </div>
+    {{ chart.title }}
+    {{ chart.get_type_display }}
+    {% for series in chart.series.all %}
+        {{ series.column }}
+    {% endfor %}
+        <div>
+            Chart options:
+            {{ chart.options|jsonify|safe }}
+        </div>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $.get("{% url 'chart-data-orient' pk=chart.data.id orient='columns' %}", function(data) {
+            var map = {};
+            var cols = {};
+            {% for series in chart.series.all %}
+            cols['{{ series.column }}'] = '{{ series.axis }}';
+                {% if series.axis == 'x' %}
+            cols['x'] = '{{ series.column }}';
+                {% endif %}
+            {% endfor %};
+            for (var column in data) {
+                map[column] = new Array();
+                for (var item in data[column]) {
+                    map[column].push(data[column][item]);
+                }
+            }
+            $("#chart").wij{{ chart.get_type_display|lower }}chart({
+                autoResize: "true",
+                {% if chart.type == "P" %}
+                radius: {{ chart.options.radius }},
+                {% endif %}
+                {% if chart.type == "L" or chart.type == "B" %}
+                axis:
+                    { y : { text : "Y-axis" },
+                      x : { text : "X-axis" }
+                    }
+                ,
+                horizontal: false
+                ,
+                {% endif %}
+                header: { text: "{{ chart.title }}" },
+                seriesList: [
+                {% for series in chart.series.all %}
+                    {% if series.axis != "x" %}
+                    {
+                        label: "{{ series.column }}",
+                        labelEntry: true,
+                        data: { x : map[cols['x']], y: map['{{ series.column }}'] }
+                    },
+                    {% endif %}
+                {% endfor %}
+                ]
+            });
+        }).fail(function() {
+            alert("There was an error fetching the data");
+        });
+    });
+</script>
+{% endblock %}

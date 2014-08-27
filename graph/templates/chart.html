@@ -1,0 +1,62 @@
+{% extends 'spreadsheet.html' %}
+
+{% block extra_head %}
+<!--Theme-->
+<link href="http://cdn.wijmo.com/themes/aristo/jquery-wijmo.css" rel="stylesheet" type="text/css" />
+
+<!--Wijmo Widgets CSS-->
+<link href="http://cdn.wijmo.com/jquery.wijmo-pro.all.3.20142.45.min.css" rel="stylesheet" type="text/css" />
+
+<!--RequireJs-->
+<script type="text/javascript" src="http://cdn.wijmo.com/external/require.js"></script>
+<script type="text/javascript">
+    requirejs.config({
+        baseUrl: "http://cdn.wijmo.com/amd-js/3.20142.45",
+            paths: {
+                "jquery": "jquery-1.11.1.min",
+                "jquery-ui": "jquery-ui-1.11.0.custom.min",
+                "jquery.ui": "jquery-ui",
+                "jquery.mousewheel": "jquery.mousewheel.min",
+                "globalize": "globalize.min"
+            }
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div id="chart" style="width: 400px; height: 300px;">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="scriptInit" type="text/javascript">
+require(["wijmo.wijbarchart"], function () {
+    $(document).ready(function () {
+        $("#chart").wijbarchart({
+            autoResize: "true",
+            axis: {
+                y: {text: "Total Hardware"},
+                x: {text: ""}
+            },
+            hint: {
+                content: function () {return this.data.label + '\n ' + this.y + '';}
+            },
+            header: {text: "Console Wars"},
+            seriesList: [{
+                label: "US",
+                legendEntry: true,
+                data: { x: ['PS3', 'XBOX360', 'Wii'], y: [12.35, 21.50, 30.56] }
+            },
+            {
+                label: "India",
+                legendEntry: true,
+                data: { x: ['PS3', 'XBOX360', 'WiiC'], y: [13.11, 30.10, 44.21] }
+            }],
+            seriesStyles: [{fill: "#8ede43", stroke: "#7fc73c", opacity: 0.8}],
+            seriesHoverStyles: [{ "stroke-width": "1.5", opacity: 1}]
+        });
+    });
+});
+</script>
+{% endblock %}
