@@ -4,3 +4,5 @@ graph/settings/local.py
 graph/settings/local/*
 docs/_build
 .idea/*
+.ipynb_checkpoints/*
+*.ipynb
