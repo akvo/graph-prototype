@@ -125,6 +125,6 @@ AUTHENTICATION_BACKENDS += (
 #==============================================================================
 IPYTHON_ARGUMENTS = [
     '--ext', 'django_extensions.management.notebook_extension',
-    '--ext', 'graph.apps.api.models'
+    '--ext', 'graph.apps.api.models',
     '--debug',
 ]
