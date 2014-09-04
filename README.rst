@@ -16,6 +16,13 @@ To bootstrap the project::
     cp graph/settings/local.py.example graph/settings/local.py
     manage.py syncdb --migrate
 
+To start ipython notebook::
+
+    source graph/bin/activate
+    python manage.py shell_plus --notebook
+
+Once the notebook starts it will open a browser. Select the example.ipynb in the browser and select 'Cell' -> 'Run All' from the menu.
+
 Documentation
 -------------
 
