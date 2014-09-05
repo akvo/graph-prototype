@@ -31,15 +31,17 @@ function parse(spec) {
   vg.parse.spec(spec, function(chart) { chart({el:"#vis"}).update(); });
 }
 //parse("None");
-$.get("/api/nb/example/line/", function(data) {
-    parse(data);
-});
+function update() {
+    $.get("/api/nb/" + $("#id_notebook").val().trim() + "/" + $("#id_var").val().trim() + "/", function(data) {
+        parse(data);
+    });
+}
+
 $(function() {
     $("#id_update").click(function(event) {
-        $.get("/api/nb/" + $("#id_notebook").val().trim() + "/" + $("#id_var").val().trim(), function(data) {
-            parse(data);
-        });
+        update();
     });
+    update();
 });
 </script>
 {% endblock scripts %}
