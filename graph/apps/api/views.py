@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect
 
-from django.http import Http404
+from django.http import Http404, HttpResponseServerError
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -128,13 +128,21 @@ import json
 import imp
 
 def notebook_visualization(request, notebook, var):
-    nb = json.load(open(os.path.join(settings.ROOT_DIR, "{notebook}.ipynb".format(notebook=notebook))))
+    nb_path = os.path.join(settings.ROOT_DIR, "{notebook}.ipynb".format(notebook=notebook))
+    if not os.path.exists(nb_path):
+        raise Http404
+    nb = json.load(open(nb_path))
     code = []
     for cell in nb["worksheets"][0]["cells"]:
         if cell["cell_type"] == "code":
             code.extend(["%s\n" % x for x in cell["input"]])
+    try:
+        nbmod = imp.new_module(notebook)
+        exec ''.join(code) in nbmod.__dict__
+    except Exception as e:
+        return HttpResponseServerError(content=e)
 
-    nbmod = imp.new_module(notebook)
-    exec ''.join(code) in nbmod.__dict__
-
-    return HttpResponse(nbmod.__dict__[var].to_json(), content_type="application/json")
+    try:
+        return HttpResponse(nbmod.__dict__[var].to_json(), content_type="application/json")
+    except KeyError:
+        raise Http404
