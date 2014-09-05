@@ -135,7 +135,7 @@ def notebook_visualization(request, notebook, var):
     code = []
     for cell in nb["worksheets"][0]["cells"]:
         if cell["cell_type"] == "code":
-            code.extend(["%s\n" % x for x in cell["input"]])
+            code.extend([ x if x.endswith("\n") else x + "\n" for x in cell["input"]])
     try:
         nbmod = imp.new_module(notebook)
         exec ''.join(code) in nbmod.__dict__
