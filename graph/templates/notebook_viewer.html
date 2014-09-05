@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+    <script src="http://trifacta.github.com/vega/vega.js"></script>
+{% endblock extra_head %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <label for="notebook">Notebook:</label><input type="text" name="notebook" id="id_notebook" value="example">
+        </div>
+        <div class="col-md-4">
+            <label for="var">Variable:</label><input type="text" name="var" id="id_var" value="line">
+        </div>
+        <div class="col-md-2">
+            <button type="button" id="id_update" class="btn btn-primary">Update</button>
+        </div>
+    </div>
+    <div class="row">
+        <div id="vis"></div>
+    </div>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+// parse a spec and create a visualization view
+function parse(spec) {
+  vg.parse.spec(spec, function(chart) { chart({el:"#vis"}).update(); });
+}
+//parse("None");
+$.get("/api/nb/example/line/", function(data) {
+    parse(data);
+});
+$(function() {
+    $("#id_update").click(function(event) {
+        $.get("/api/nb/" + $("#id_notebook").val().trim() + "/" + $("#id_var").val().trim(), function(data) {
+            parse(data);
+        });
+    });
+});
+</script>
+{% endblock scripts %}

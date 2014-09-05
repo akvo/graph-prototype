@@ -50,6 +50,7 @@ import sys
 import graph as project_module
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
+ROOT_DIR = os.path.dirname(PROJECT_DIR)
 
 PYTHON_BIN = os.path.dirname(sys.executable)
 ve_path = os.path.dirname(os.path.dirname(os.path.dirname(PROJECT_DIR)))

@@ -123,3 +123,18 @@ def chart_create(request):
         print "form is valid"
 
     return redirect("index")
+
+import json
+import imp
+
+def notebook_visualization(request, notebook, var):
+    nb = json.load(open(os.path.join(settings.ROOT_DIR, "{notebook}.ipynb".format(notebook=notebook))))
+    code = []
+    for cell in nb["worksheets"][0]["cells"]:
+        if cell["cell_type"] == "code":
+            code.extend(["%s\n" % x for x in cell["input"]])
+
+    nbmod = imp.new_module(notebook)
+    exec ''.join(code) in nbmod.__dict__
+
+    return HttpResponse(nbmod.__dict__[var].to_json(), content_type="application/json")
