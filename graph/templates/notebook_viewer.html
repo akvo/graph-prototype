@@ -9,15 +9,17 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-4">
-            <label for="notebook">Notebook:</label><input type="text" name="notebook" id="id_notebook" value="example">
+        <form class="form-inline" role="form">
+        <div class="col-md-4 form-group ui-widget">
+            <label for="notebook">Notebook:</label><input type="text" name="notebook" class="form-control" id="id_notebook" value="example">
         </div>
-        <div class="col-md-4">
-            <label for="var">Variable:</label><input type="text" name="var" id="id_var" value="line">
+        <div class="col-md-4 form-group ui-widget">
+            <label for="var">Variable:</label><input type="text" class="form-control" name="var" id="id_var" value="line">
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 form-group ui-widget">
             <button type="button" id="id_update" class="btn btn-primary">Update</button>
         </div>
+        </form>
     </div>
     <div class="row">
         <div id="vis"></div>
@@ -42,6 +44,19 @@ $(function() {
         update();
     });
     update();
+    $("#id_notebook").autocomplete({
+        source: "/api/nb/",
+        minLength: 0,
+        select: function(event, ui) {
+            $("#id_var").autocomplete({
+                source: "/api/nb/" + this.value,
+                minLength: 0,
+                select: function(event, ui) {
+                    update();
+                }
+            });
+        }
+    });
 });
 </script>
 {% endblock scripts %}

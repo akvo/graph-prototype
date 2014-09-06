@@ -126,8 +126,9 @@ def chart_create(request):
 
 import json
 import imp
+from glob import glob
 
-def notebook_visualization(request, notebook, var):
+def load_notebook(notebook):
     nb_path = os.path.join(settings.ROOT_DIR, "{notebook}.ipynb".format(notebook=notebook))
     if not os.path.exists(nb_path):
         raise Http404
@@ -142,7 +143,31 @@ def notebook_visualization(request, notebook, var):
     except Exception as e:
         return HttpResponseServerError(content=e)
 
+    return nbmod
+
+def notebook_visualization(request, notebook, var):
+    nbmod = load_notebook(notebook)
+    if type(nbmod) == HttpResponseServerError:
+        return nbmod
+
     try:
         return HttpResponse(nbmod.__dict__[var].to_json(), content_type="application/json")
     except KeyError:
         raise Http404
+
+from os.path import join, basename
+def notebook_list(request):
+    return HttpResponse(json.dumps([basename(path).split(".")[0] for path in glob(join(settings.ROOT_DIR, "*.ipynb"))]), content_type="application/json")
+
+from vincent.visualization import Visualization
+
+def notebook_var_list(request, notebook):
+    nbmod = load_notebook(notebook)
+    if type(nbmod) == HttpResponseServerError:
+        return nbmod
+    visualization_vars = []
+    for name, var in nbmod.__dict__.iteritems():
+        if isinstance(var, Visualization):
+            visualization_vars.append(name)
+
+    return HttpResponse(json.dumps(visualization_vars), content_type="application/json")
