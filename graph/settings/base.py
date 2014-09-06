@@ -101,13 +101,20 @@ TEMPLATE_DIRS = (
 
 TEMPLATE_CONTEXT_PROCESSORS += (
     "django.core.context_processors.request",
+    "django.contrib.messages.context_processors.messages",
 )
 
 #==============================================================================
 # Middleware
 #==============================================================================
 
-MIDDLEWARE_CLASSES += (
+MIDDLEWARE_CLASSES = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 #==============================================================================

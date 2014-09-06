@@ -8,6 +8,7 @@ class FileData(models.Model):
     created_on = models.DateField(auto_now_add=True)
     updated_on = models.DateField(auto_now=True)
 
+
 class Chart(models.Model):
     CHART_TECH_WIJMO = 'W'
     CHART_TECH_VEGA = 'V'
@@ -30,6 +31,7 @@ class Chart(models.Model):
     title = models.CharField(max_length=32)
     data = models.ForeignKey('FileData')
     options = JSONField(blank=True)
+
 
 class ChartSeries(models.Model):
     chart = models.ForeignKey('Chart', related_name='series')
